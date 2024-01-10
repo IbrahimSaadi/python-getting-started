@@ -4,7 +4,9 @@ from telegram import Update
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackContext
 from PIL import Image
 import pytesseract
-from googletrans import Translator
+from googletrans import Translator    
+pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
+ 
 
 # Replace 'YOUR_BOT_TOKEN' with the token you received from BotFather
 BOT_TOKEN = '5988601506:AAH_t0h3R7i7KBOHgbOHcVwnvyliKgf16c4'
