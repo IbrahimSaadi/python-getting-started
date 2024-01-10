@@ -1,6 +1,6 @@
 from PIL import Image
 import pytesseract
-
+ pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
 def extract_text_from_image(image_path):
     try:
         # Open the image file
