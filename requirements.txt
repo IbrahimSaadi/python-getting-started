@@ -6,7 +6,7 @@ better-profanity==0.7.0
 blinker==1.7.0
 cachetools==4.2.2
 certifi==2023.11.17
-easyocr==1.7.1
+pytesseract==0.3.10
 cffi==1.16.0
 chardet==3.0.4
 charset-normalizer==3.3.2
