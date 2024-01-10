@@ -1,5 +1,5 @@
 tesseract-ocr 
 tesseract-ocr-eng
 libarchive13  
-EasyOCR
-
+tesseract-ocr
+libtesseract-dev
