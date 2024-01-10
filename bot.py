@@ -7,7 +7,7 @@ import pytesseract
 from googletrans import Translator
 
 # Replace 'YOUR_BOT_TOKEN' with the token you received from BotFather
-BOT_TOKEN = 'YOUR_BOT_TOKEN'
+BOT_TOKEN = '5988601506:AAH_t0h3R7i7KBOHgbOHcVwnvyliKgf16c4'
 user_states = {}
 # Create a directory to store user-specific data
 DATA_DIR = 'user_data'
