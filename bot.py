@@ -1,10 +1,5 @@
 from PIL import Image
 import pytesseract
-# your path may be different
-pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
-pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin//Tesseract-OCR/tesseract.exe'
-pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract.exe'
-
 
 def extract_text_from_image(image_path):
     try:
@@ -17,7 +12,6 @@ def extract_text_from_image(image_path):
         return text
     except Exception as e:
         return str(e)
-
 
 if __name__ == "__main__":
     # Replace 'your_image_path.jpg' with the path to your image file
