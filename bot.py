@@ -3,7 +3,7 @@ import pytesseract
 # your path may be different
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin//Tesseract-OCR/tesseract.exe'
- pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
+ pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract.exe'
 
 
 def extract_text_from_image(image_path):
