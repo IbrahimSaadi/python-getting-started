@@ -3,7 +3,7 @@ import os
 import shutil
 from telegram import Update
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackContext
-import easyocr
+#import easyocr
 from PIL import Image
 import pytesseract
 # your path may be different
