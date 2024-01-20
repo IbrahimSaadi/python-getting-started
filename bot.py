@@ -1,6 +1,6 @@
 from PIL import Image
 import pytesseract
- pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
+# pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
 def extract_text_from_image(image_path):
     try:
         # Open the image file
@@ -8,7 +8,7 @@ def extract_text_from_image(image_path):
 
         # Use pytesseract to do OCR on the image
         text = pytesseract.image_to_string(img)
-
+ 
         return text
     except Exception as e:
         return str(e)
