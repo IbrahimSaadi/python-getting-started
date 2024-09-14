@@ -8,7 +8,7 @@ GROQ_API_KEY = "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"
 client = Client(api_key=GROQ_API_KEY)
 
 # Telegram bot token from BotFather
-TELEGRAM_BOT_TOKEN = "7424670977:AAGDXrxBYWVJAtdf7aU1vYUvbjHXGzEy5dM"
+TELEGRAM_BOT_TOKEN = "7389844135:AAFQNw2OA4zPyOUS3DtJ6Fb4c5CRpWSFHmw"
 
 # Function to handle incoming messages
 
