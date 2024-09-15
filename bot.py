@@ -17,7 +17,7 @@ def AI_gemini(update, context):
         if phrase in user_message.lower():
             update.message.reply_text(
                 "ابراهيم سعدي طالب من جامعة نينوى و هو مبرمج البوت ومطور الذكاء الاصطناعي")
-        return
+            return
     # Make Groq API call
     try:
         chat_completion = client.chat.completions.create(
