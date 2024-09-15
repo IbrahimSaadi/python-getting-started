@@ -7,12 +7,17 @@ client = Client(api_key=GROQ_API_KEY)
 TELEGRAM_BOT_TOKEN = "7389844135:AAFQNw2OA4zPyOUS3DtJ6Fb4c5CRpWSFHmw"
 myID = 1237470290
 # Function to handle incoming messages
+target_phrases = ["من هو ابراهيم سعدي", "how is ibrahim saadi"]
 
 
 def AI_gemini(update, context):
     user_message = update.message.text
     chat_id = update.message.chat_id
-
+    for phrase in target_phrases:
+        if phrase in user_message.lower():
+            update.message.reply_text(
+                "ابراهيم سعدي طالب من جامعة نينوى و هو مبرمج البوت ومطور الذكاء الاصطناعي")
+        return
     # Make Groq API call
     try:
         chat_completion = client.chat.completions.create(
