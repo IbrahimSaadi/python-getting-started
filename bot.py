@@ -1,9 +1,13 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from groq import Client
+from dotenv import load_dotenv
 import logging
 from typing import Dict, List
 import os
 from datetime import datetime
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
