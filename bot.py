@@ -40,6 +40,10 @@ class UserSession:
             self.context.pop(0)
         self.last_interaction = datetime.now()
 
+    def clear_messages(self) -> None:
+        self.context = []
+        self.last_interaction = datetime.now()
+
 # Global session store
 sessions: Dict[int, UserSession] = {}
 
@@ -160,6 +164,13 @@ def handle_answer_type(update, context) -> None:
         logger.error(f"Groq API error: {str(e)}")
         query.edit_message_text("عذراً، حدث خطأ في معالجة طلبك. الرجاء المحاولة مرة أخرى لاحقاً.")
 
+def clear_messages_command(update, context) -> None:
+    """Clear the user's session messages"""
+    user_id = update.message.from_user.id
+    session = get_user_session(user_id)
+    session.clear_messages()
+    update.message.reply_text("تم مسح سجل الرسائل الخاص بك بنجاح! 😊")
+
 def main() -> None:
     """Start the bot"""
     try:
@@ -170,6 +181,7 @@ def main() -> None:
         # Add handlers
         dp.add_handler(CommandHandler("start", start_command))
         dp.add_handler(CommandHandler("warning", warning_command))
+        dp.add_handler(CommandHandler("clear", clear_messages_command))
         dp.add_handler(MessageHandler(
             Filters.text & ~Filters.command,
             handle_message
