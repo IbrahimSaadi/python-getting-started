@@ -1,4 +1,5 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from groq import Client
 from dotenv import load_dotenv
 import logging
@@ -87,12 +88,21 @@ def notify_owner(update, context) -> None:
             text=f"New user: {username}"
         )
 
+def ask_answer_type(update, context) -> None:
+    """Ask the user if they need a short or detailed answer"""
+    keyboard = [
+        [InlineKeyboardButton("إجابة قصيرة", callback_data="short_answer"),
+         InlineKeyboardButton("إجابة مفصلة", callback_data="detailed_answer")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text("هل ترغب بإجابة قصيرة أم مفصلة؟", reply_markup=reply_markup)
+
 def handle_message(update, context) -> None:
     """Handle incoming messages"""
     try:
         user_message = update.message.text.strip()
         user_id = update.message.from_user.id
-        
+
         # Check for predefined responses
         if any(phrase in user_message.lower() for phrase in [
             "من هو ابراهيم سعدي",
@@ -103,38 +113,52 @@ def handle_message(update, context) -> None:
             )
             return
 
-        # Get or create user session
+        # Save the user message in the session
         session = get_user_session(user_id)
         session.add_message("user", user_message)
 
-        # Get AI response
-        try:
-            chat_completion = groq_client.chat.completions.create(
-                messages=session.context,
-                model=Config.MODEL_NAME,
-            )
-            response = chat_completion.choices[0].message.content
-            session.add_message("assistant", response)
-            
-        except Exception as e:
-            logger.error(f"Groq API error: {str(e)}")
-            response = "عذراً، حدث خطأ في معالجة طلبك. الرجاء المحاولة مرة أخرى لاحقاً."
-
-        # Send response
-        update.message.reply_text(response)
-        
-        # Notify owner
-        if user_id != Config.OWNER_ID:
-            user = update.message.from_user
-            username = f"@{user.username}" if user.username else user.full_name
-            context.bot.send_message(
-                chat_id=Config.OWNER_ID,
-                text=f"{username} -> {user_message}"
-            )
+        # Ask for answer type
+        ask_answer_type(update, context)
 
     except Exception as e:
         logger.error(f"Error in message handler: {str(e)}")
         update.message.reply_text("عذراً، حدث خطأ غير متوقع. الرجاء المحاولة مرة أخرى.")
+
+def handle_answer_type(update, context) -> None:
+    """Handle the user's choice of answer type"""
+    query = update.callback_query
+    query.answer()
+
+    user_id = query.from_user.id
+    session = get_user_session(user_id)
+
+    try:
+        answer_type = query.data
+        messages = session.context
+
+        if answer_type == "short_answer":
+            # Fetch a concise response
+            response = groq_client.chat.completions.create(
+                messages=messages,
+                model=Config.MODEL_NAME,
+                max_tokens=50  # Limit response length
+            ).choices[0].message.content
+        else:
+            # Fetch a detailed response
+            response = groq_client.chat.completions.create(
+                messages=messages,
+                model=Config.MODEL_NAME
+            ).choices[0].message.content
+
+        # Save the assistant's response
+        session.add_message("assistant", response)
+
+        # Send the response
+        query.edit_message_text(response)
+
+    except Exception as e:
+        logger.error(f"Groq API error: {str(e)}")
+        query.edit_message_text("عذراً، حدث خطأ في معالجة طلبك. الرجاء المحاولة مرة أخرى لاحقاً.")
 
 def main() -> None:
     """Start the bot"""
@@ -150,6 +174,7 @@ def main() -> None:
             Filters.text & ~Filters.command,
             handle_message
         ))
+        dp.add_handler(CallbackQueryHandler(handle_answer_type))
 
         # Start the bot
         logger.info("Starting bot...")
