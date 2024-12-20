@@ -6,6 +6,7 @@ import logging
 from typing import Dict, List
 import os
 from datetime import datetime
+import sqlite3
 
 # Load environment variables from .env file
 load_dotenv()
@@ -24,13 +25,27 @@ class Config:
     OWNER_ID = int(os.getenv("OWNER_ID", "1237470290"))
     MAX_CONTEXT_MESSAGES = 5
     MODEL_NAME = "gemma2-9b-it"
+    DB_PATH = "user_sessions.db"
 
 # Initialize clients
 groq_client = Client(api_key=Config.GROQ_API_KEY)
 
+# Database setup
+conn = sqlite3.connect(Config.DB_PATH, check_same_thread=False)
+cursor = conn.cursor()
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS user_sessions (
+    user_id INTEGER PRIMARY KEY,
+    context TEXT,
+    last_interaction TIMESTAMP
+)
+''')
+conn.commit()
+
 # User session management
 class UserSession:
-    def __init__(self):
+    def __init__(self, user_id: int):
+        self.user_id = user_id
         self.context: List[Dict[str, str]] = []
         self.last_interaction: datetime = datetime.now()
 
@@ -39,18 +54,34 @@ class UserSession:
         if len(self.context) > Config.MAX_CONTEXT_MESSAGES:
             self.context.pop(0)
         self.last_interaction = datetime.now()
+        self.save_to_db()
 
     def clear_messages(self) -> None:
         self.context = []
         self.last_interaction = datetime.now()
+        self.save_to_db()
 
-# Global session store
-sessions: Dict[int, UserSession] = {}
+    def save_to_db(self) -> None:
+        context_str = str(self.context)
+        cursor.execute('''
+        INSERT INTO user_sessions (user_id, context, last_interaction)
+        VALUES (?, ?, ?)
+        ON CONFLICT(user_id) DO UPDATE SET
+            context=excluded.context,
+            last_interaction=excluded.last_interaction
+        ''', (self.user_id, context_str, self.last_interaction))
+        conn.commit()
 
-def get_user_session(user_id: int) -> UserSession:
-    if user_id not in sessions:
-        sessions[user_id] = UserSession()
-    return sessions[user_id]
+    @staticmethod
+    def load_from_db(user_id: int):
+        cursor.execute('SELECT context, last_interaction FROM user_sessions WHERE user_id = ?', (user_id,))
+        row = cursor.fetchone()
+        if row:
+            session = UserSession(user_id)
+            session.context = eval(row[0])  # Convert string back to list
+            session.last_interaction = datetime.fromisoformat(row[1])
+            return session
+        return UserSession(user_id)
 
 # Command handlers
 def start_command(update, context) -> None:
@@ -114,18 +145,8 @@ def handle_message(update, context) -> None:
             text=f"{username} sent a message: {user_message}"
         )
 
-        # Check for predefined responses
-        if any(phrase in user_message.lower() for phrase in [
-            "من هو ابراهيم سعدي",
-            "how is ibrahim saadi"
-        ]):
-            update.message.reply_text(
-                "ابراهيم سعدي طالب من جامعة نينوى و هو مبرمج البوت ومطور الذكاء الاصطناعي"
-            )
-            return
-
         # Save the user message in the session
-        session = get_user_session(user_id)
+        session = UserSession.load_from_db(user_id)
         session.add_message("user", user_message)
 
         # Ask for answer type
@@ -141,7 +162,7 @@ def handle_answer_type(update, context) -> None:
     query.answer()
 
     user_id = query.from_user.id
-    session = get_user_session(user_id)
+    session = UserSession.load_from_db(user_id)
 
     try:
         answer_type = query.data
@@ -174,7 +195,7 @@ def handle_answer_type(update, context) -> None:
 def clear_messages_command(update, context) -> None:
     """Clear the user's session messages"""
     user_id = update.message.from_user.id
-    session = get_user_session(user_id)
+    session = UserSession.load_from_db(user_id)
     session.clear_messages()
     update.message.reply_text("تم مسح سجل الرسائل الخاص بك بنجاح! 😊")
 
