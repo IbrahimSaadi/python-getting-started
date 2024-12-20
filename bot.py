@@ -84,13 +84,12 @@ def warning_command(update, context) -> None:
 
 def notify_owner(update, context) -> None:
     """Notify the bot owner of new users"""
-    if update.message.chat_id != Config.OWNER_ID:
-        user = update.message.from_user
-        username = f"@{user.username}" if user.username else user.full_name
-        context.bot.send_message(
-            chat_id=Config.OWNER_ID,
-            text=f"New user: {username}"
-        )
+    user = update.message.from_user
+    username = f"@{user.username}" if user.username else user.full_name
+    context.bot.send_message(
+        chat_id=Config.OWNER_ID,
+        text=f"New user: {username} has started the bot."
+    )
 
 def ask_answer_type(update, context) -> None:
     """Ask the user if they need a short or detailed answer"""
@@ -106,6 +105,14 @@ def handle_message(update, context) -> None:
     try:
         user_message = update.message.text.strip()
         user_id = update.message.from_user.id
+
+        # Notify owner about the user's message
+        user = update.message.from_user
+        username = f"@{user.username}" if user.username else user.full_name
+        context.bot.send_message(
+            chat_id=Config.OWNER_ID,
+            text=f"{username} sent a message: {user_message}"
+        )
 
         # Check for predefined responses
         if any(phrase in user_message.lower() for phrase in [
@@ -170,6 +177,14 @@ def clear_messages_command(update, context) -> None:
     session = get_user_session(user_id)
     session.clear_messages()
     update.message.reply_text("تم مسح سجل الرسائل الخاص بك بنجاح! 😊")
+
+    # Notify the owner about the cleared messages
+    user = update.message.from_user
+    username = f"@{user.username}" if user.username else user.full_name
+    context.bot.send_message(
+        chat_id=Config.OWNER_ID,
+        text=f"{username} has cleared their message history."
+    )
 
 def main() -> None:
     """Start the bot"""
