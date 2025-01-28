@@ -24,7 +24,7 @@ class Config:
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your_telegram_token")
     OWNER_ID = int(os.getenv("OWNER_ID", "1237470290"))
     MAX_CONTEXT_MESSAGES = 5
-    MODEL_NAME = "gemma2-9b-it"
+    MODEL_NAME = "deepseek-r1-distill-llama-70b"
     DB_PATH = "user_sessions.db"
 
 # Initialize clients
